@@ -1,11 +1,11 @@
 # dbus-senec-enfluri
 Integrate an EnFluRi meter, connected to a Senec Home storage system into [Victron Energies Venus OS](https://github.com/victronenergy/venus)
 
+It can be used in concert with my other script [venus.dbus-senec-inverter](https://github.com/kopierschnitte/venus.dbus-senec-inverter) to fully integrate a Senec Home system into Victron's ecosystem.
+
 ## Purpose
 With the scripts in this repo it should be easy possible to install, uninstall, restart a service that connects the EnFluRi to the VenusOS and GX devices from Victron.
 Idea is pasend on @RalfZim project linked below.
-
-
 
 ## Inspiration
 This project is my first on GitHub and with the Victron Venus OS, so I took some ideas and approaches from the following projects - many thanks for sharing the knowledge:
@@ -13,8 +13,6 @@ This project is my first on GitHub and with the Victron Venus OS, so I took some
 - https://github.com/victronenergy/dbus-smappee
 - https://github.com/Louisvdw/dbus-serialbattery
 - https://community.victronenergy.com/questions/85564/eastron-sdm630-modbus-energy-meter-community-editi.html
-
-
 
 ## How it works
 ### My setup
