@@ -32,7 +32,7 @@ So what is the script doing:
 
 - Running as a service
 - connecting to DBus of the Venus OS `com.victronenergy.grid.http_40`
-- After successful DBus connection, IOBroker smartmeter values are accessed. NOTE: it might be required to change the iobroker IDs in order to be functuonal for you (see method \_getIOBrokerSmartmeterData). IF you need it please open an issue, than this can also be added to the config file..
+- After successful DBus connection, IOBroker smartmeter values are accessed.
 - Serial is taken from the response as device serial
 - Paths are added to the DBus with default value 0 - including some settings like name, etc
 - After that a "loop" is started which polls iobroker data every 1000ms from the REST-API and updates the values in the DBus
@@ -41,13 +41,27 @@ Thats it 😄
 
 ## Install & Configuration
 
-- same as https://github.com/RalfZim/venus.dbus-fronius-smartmeter
+same as https://github.com/RalfZim/venus.dbus-fronius-smartmeter
+
+Summed up for IO-Broker
+
+- configure iobroker smartmeter plugin (or simply store your powers per phase in iobroker..)
+- configure simple api plugin for api broker
+
+Summed up for Venus/Victron
+
+- Get Superuser rights on your CCGX device (https://www.victronenergy.com/live/ccgx:root_access#set_access_level_to_superuser)
+- Configure root password
+- Get the code from github
+- configure config.ini and maintain the paths to the device-id (smart meter id), power overall, power phase 1 - 3
+- Connect via winscp (or similar ssh clients) and copy over the code to /data/dbus-iobroker-smartmeter
+- Possibly adjust the execution rights on install.sh (e.g. via winscp)
+- Execute install.sh script
 
 ### Get the code
 
 Just grap a copy of the main branch and copy them to `/data/dbus-iobroker-smartmeter`.
 Edit the config.ini file
-Possibly edit \_getIOBrokerSmartmeterData to the paths you need
 After that call the install.sh script.
 
 ## Used documentation

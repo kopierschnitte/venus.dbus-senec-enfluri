@@ -28,6 +28,8 @@ class DbusIobrokerSmartmeterService:
             "{}.http_{:02d}".format(servicename, deviceinstance))
         self._paths = paths
 
+        self._config = self._getConfig()
+
         logging.debug("%s /DeviceInstance = %d" %
                       (servicename, deviceinstance))
 
@@ -70,7 +72,7 @@ class DbusIobrokerSmartmeterService:
 
         # add _update function 'timer'
         # pause 1000ms before the next request
-        gobject.timeout_add(1000, self._update)
+        gobject.timeout_add(500, self._update)
 
         # add _signOfLife 'timer' to get feedback in log every 5minutes
         gobject.timeout_add(self._getSignOfLifeInterval()
@@ -80,7 +82,7 @@ class DbusIobrokerSmartmeterService:
         meter_data = self._getIOBrokerSmartmeterData()
 
         device_id = next(
-            (x for x in meter_data if x['id'] == "smartmeter.0.1-0:96_1_0__255.value"), None)
+            (x for x in meter_data if x['id'] == self._getSmartMeterDeviceId()), None)
 
         if not device_id['val']:
             raise ValueError(
@@ -96,16 +98,37 @@ class DbusIobrokerSmartmeterService:
         return config
 
     def _getSignOfLifeInterval(self):
-        config = self._getConfig()
-        value = config['DEFAULT']['SignOfLifeLog']
+        value = self._config['DEFAULT']['SignOfLifeLog']
 
         if not value:
             value = 0
 
         return int(value)
 
+    def _getSmartMeterDeviceId(self):
+        value = self._config['DEFAULT']['IOBrokerPathSmartMeterId']
+        return value
+
+    def _getSmartMeterOverallConsumption(self):
+        value = self._config['DEFAULT']['IOBrokerPathOverallConsumption']
+        return value
+
+    def _getSmartMeterPhase1Consumption(self):
+        value = self._config['DEFAULT']['IOBrokerPathPhase1']
+        return value
+
+    def _getSmartMeterPhase2Consumption(self):
+        value = self._config['DEFAULT']['IOBrokerPathPhase2']
+        return value
+
+    def _getSmartMeterPhase3Consumption(self):
+        value = self._config['DEFAULT']['IOBrokerPathPhase3']
+        return value
+
     def _getIOBrokerSmartmeterData(self):
-        URL = "http://192.168.178.81:8087/getBulk/smartmeter.0.1-0:96_1_0__255.value,smartmeter.0.1-0:16_7_0__255.value,smartmeter.0.1-0:36_7_0__255.value,smartmeter.0.1-0:56_7_0__255.value,smartmeter.0.1-0:76_7_0__255.value"
+        URL = "http://192.168.178.81:8087/getBulk/" + self._getSmartMeterDeviceId() + "," + self._getSmartMeterOverallConsumption() + "," + \
+            self._getSmartMeterPhase1Consumption() + "," + self._getSmartMeterPhase2Consumption() + \
+            "," + self._getSmartMeterPhase3Consumption()
 
         headers = {}
 
@@ -142,13 +165,13 @@ class DbusIobrokerSmartmeterService:
 
             # send data to DBus
             total_value = next(
-                (x for x in meter_data if x['id'] == "smartmeter.0.1-0:16_7_0__255.value"), None)['val']
+                (x for x in meter_data if x['id'] == self._getSmartMeterOverallConsumption()), None)['val']
             phase_1 = next((x for x in meter_data if x['id'] ==
-                            "smartmeter.0.1-0:56_7_0__255.value"), None)['val']
+                            self._getSmartMeterPhase1Consumption()), None)['val']
             phase_2 = next((x for x in meter_data if x['id'] ==
-                            "smartmeter.0.1-0:36_7_0__255.value"), None)['val']
+                            self._getSmartMeterPhase2Consumption()), None)['val']
             phase_3 = next((x for x in meter_data if x['id'] ==
-                            "smartmeter.0.1-0:76_7_0__255.value"), None)['val']
+                            self._getSmartMeterPhase3Consumption()), None)['val']
 
             # positive: consumption, negative: feed into grid
             self._dbusservice['/Ac/Power'] = total_value
