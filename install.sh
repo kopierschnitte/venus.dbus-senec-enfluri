@@ -1,19 +1,19 @@
 #!/bin/bash
 
 # set permissions for script files
-chmod a+x /data/dbus-senec-enfluri/restart.sh
-chmod 744 /data/dbus-senec-enfluri/restart.sh
+chmod a+x /data/dbus-iobroker-smartmeter/restart.sh
+chmod 744 /data/dbus-iobroker-smartmeter/restart.sh
 
-chmod a+x /data/dbus-senec-enfluri/uninstall.sh
-chmod 744 /data/dbus-senec-enfluri/uninstall.sh
+chmod a+x /data/dbus-iobroker-smartmeter/uninstall.sh
+chmod 744 /data/dbus-iobroker-smartmeter/uninstall.sh
 
-chmod a+x /data/dbus-senec-enfluri/service/run
-chmod 755 /data/dbus-senec-enfluri/service/run
+chmod a+x /data/dbus-iobroker-smartmeter/service/run
+chmod 755 /data/dbus-iobroker-smartmeter/service/run
 
 
 
 # create sym-link to run script in deamon
-ln -s /data/dbus-senec-enfluri/service /service/dbus-senec-enfluri
+ln -s /data/dbus-iobroker-smartmeter/service /service/dbus-iobroker-smartmeter
 
 
 
@@ -27,4 +27,4 @@ then
     echo >> $filename
 fi
 
-grep -qxF '/data/dbus-senec-enfluri/install.sh' $filename || echo '/data/dbus-senec-enfluri/install.sh' >> $filename
+grep -qxF '/data/dbus-iobroker-smartmeter/install.sh' $filename || echo '/data/dbus-iobroker-smartmeter/install.sh' >> $filename

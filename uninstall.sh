@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm /service/dbus-senec-enfluri
-kill $(pgrep -f 'supervise dbus-senec-enfluri')
-chmod a-x /data/dbus-senec-enfluri/service/run
+rm /service/dbus-iobroker-smartmeter
+kill $(pgrep -f 'supervise dbus-iobroker-smartmeter')
+chmod a-x /data/dbus-iobroker-smartmeter/service/run
 ./restart.sh
