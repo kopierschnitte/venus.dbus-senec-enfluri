@@ -21,8 +21,14 @@ This project is my first on GitHub and with the Victron Venus OS, so I took some
 
 IO-Broker
 
-- configure iobroker smartmeter plugin (or simply store your powers per phase in iobroker..)
 - configure simple api plugin for api broker
+- include the power consumption and energy sold/bought objects into iobroker. Implementing this differs on your situation. There are a lot of options depending on your hardware. Examples:
+    - Smartemter: iobroker smartmeter plugin
+    - Shelly: https://github.com/iobroker-community-adapters/ioBroker.shelly
+    - Fronius: https://github.com/iobroker-community-adapters/ioBroker.fronius
+    - Kostal: https://github.com/StrathCole/ioBroker.plenticore
+    - Senec: https://github.com/nobl/iobroker.senec/
+
 
 Venus/GX
 
