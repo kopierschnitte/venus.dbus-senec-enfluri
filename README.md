@@ -17,28 +17,6 @@ This project is my first on GitHub and with the Victron Venus OS, so I took some
 - https://github.com/Louisvdw/dbus-serialbattery
 - https://community.victronenergy.com/questions/85564/eastron-sdm630-modbus-energy-meter-community-editi.html
 
-## How it works
-
-### My setup
-
-- iobroker smartmeter plugin ( https://github.com/Apollon77/ioBroker.smartmeter )
-- iobroker simple api plugin ( https://github.com/ioBroker/ioBroker.simple-api )
-- any ir reader for the smartmeter https://www.ebay.de/itm/125077162292
-
-### Details / Process
-
-As mentioned above the script is inspired by @RalfZim and @kopierschnitte fronius smartmeter implementation.
-So what is the script doing:
-
-- Running as a service
-- connecting to DBus of the Venus OS `com.victronenergy.grid.http_40`
-- After successful DBus connection, IOBroker smartmeter values are accessed.
-- Serial is taken from the response as device serial
-- Paths are added to the DBus with default value 0 - including some settings like name, etc
-- After that a "loop" is started which polls iobroker data every 1000ms from the REST-API and updates the values in the DBus
-
-Thats it 😄
-
 ## Install & Configuration
 
 same as https://github.com/RalfZim/venus.dbus-fronius-smartmeter
@@ -70,6 +48,28 @@ Summed up for Venus/Victron
 - IOBrokerPathGridBought --> Total Bought in kWh
 
 Additionally the parameter _IOBrokerHostPath_ must give the absolute URL to your IOBroker instance.
+
+## How it works
+
+### My setup
+
+- iobroker smartmeter plugin ( https://github.com/Apollon77/ioBroker.smartmeter )
+- iobroker simple api plugin ( https://github.com/ioBroker/ioBroker.simple-api )
+- any ir reader for the smartmeter https://www.ebay.de/itm/125077162292
+
+### Details / Process
+
+As mentioned above the script is inspired by @RalfZim and @kopierschnitte fronius smartmeter implementation.
+So what is the script doing:
+
+- Running as a service
+- connecting to DBus of the Venus OS `com.victronenergy.grid.http_40`
+- After successful DBus connection, IOBroker smartmeter values are accessed.
+- Serial is taken from the response as device serial
+- Paths are added to the DBus with default value 0 - including some settings like name, etc
+- After that a "loop" is started which polls iobroker data every 1000ms from the REST-API and updates the values in the DBus
+
+Thats it 😄
 
 ## Used documentation
 
