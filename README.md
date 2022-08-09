@@ -58,11 +58,18 @@ Summed up for Venus/Victron
 - Possibly adjust the execution rights on install.sh (e.g. via winscp)
 - Execute install.sh script
 
-### Get the code
+## Config-INI Details
 
-Just grap a copy of the main branch and copy them to `/data/dbus-iobroker-smartmeter`.
-Edit the config.ini file
-After that call the install.sh script.
+- All IOBroker Paths are referencing to the _full path_ of the iobroker object
+- IOBrokerPathSmartMeterId --> Unique ID (serial) used - can e.g. be the serial of the smart meter
+- IOBrokerPathOverallConsumption --> Consumption of all three phases in W
+- IOBrokerPathPhase1 --> Consumption on phase 1 in W
+- IOBrokerPathPhase2 --> Consumption on phase 2 in W
+- IOBrokerPathPhase3 --> Consumption on phase 3 in W
+- IOBrokerPathGridSold --> Total Sold in kWh
+- IOBrokerPathGridBought --> Total Bought in kWh
+
+Additionally the parameter _IOBrokerHostPath_ must give the absolute URL to your IOBroker instance.
 
 ## Used documentation
 

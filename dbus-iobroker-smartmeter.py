@@ -125,10 +125,25 @@ class DbusIobrokerSmartmeterService:
         value = self._config['DEFAULT']['IOBrokerPathPhase3']
         return value
 
+    def _getSmartMeterGridSold(self):
+        value = self._config['DEFAULT']['IOBrokerPathGridSold']
+        return value
+
+    def _getSmartMeterGridBought(self):
+        value = self._config['DEFAULT']['IOBrokerPathGridBought']
+        return value
+
+        
+    def _getIOBrokerPath(self):
+        value = self._config['DEFAULT']['IOBrokerHostPath']
+        return value
+
+
     def _getIOBrokerSmartmeterData(self):
-        URL = "http://192.168.178.81:8087/getBulk/" + self._getSmartMeterDeviceId() + "," + self._getSmartMeterOverallConsumption() + "," + \
+        URL = self._getIOBrokerPath() + "/getBulk/" + self._getSmartMeterDeviceId() + "," + self._getSmartMeterOverallConsumption() + "," + \
             self._getSmartMeterPhase1Consumption() + "," + self._getSmartMeterPhase2Consumption() + \
-            "," + self._getSmartMeterPhase3Consumption()
+            "," + self._getSmartMeterPhase3Consumption() + "," + self._getSmartMeterGridBought() + \
+            "," + self._getSmartMeterGridSold()
 
         headers = {}
 
@@ -172,6 +187,10 @@ class DbusIobrokerSmartmeterService:
                             self._getSmartMeterPhase2Consumption()), None)['val']
             phase_3 = next((x for x in meter_data if x['id'] ==
                             self._getSmartMeterPhase3Consumption()), None)['val']
+            grid_sold = next((x for x in meter_data if x['id'] ==
+                              self._getSmartMeterGridSold()), None)['val']
+            grid_bought = next((x for x in meter_data if x['id'] ==
+                                self._getSmartMeterGridBought()), None)['val']
 
             # positive: consumption, negative: feed into grid
             self._dbusservice['/Ac/Power'] = total_value
@@ -184,14 +203,10 @@ class DbusIobrokerSmartmeterService:
             self._dbusservice['/Ac/L1/Power'] = phase_1
             self._dbusservice['/Ac/L2/Power'] = phase_2
             self._dbusservice['/Ac/L3/Power'] = phase_3
+
             ##self._dbusservice['/Ac/L1/Energy/Forward'] = (meter_data['emeters'][0]['total']/1000)
-            ##self._dbusservice['/Ac/L2/Energy/Forward'] = (meter_data['emeters'][1]['total']/1000)
-            ##self._dbusservice['/Ac/L3/Energy/Forward'] = (meter_data['emeters'][2]['total']/1000)
-            ##self._dbusservice['/Ac/L1/Energy/Reverse'] = (meter_data['emeters'][0]['total_returned']/1000)
-            ##self._dbusservice['/Ac/L2/Energy/Reverse'] = (meter_data['emeters'][1]['total_returned']/1000)
-            ##self._dbusservice['/Ac/L3/Energy/Reverse'] = (meter_data['emeters'][2]['total_returned']/1000)
-            ##self._dbusservice['/Ac/Energy/Forward'] = self._dbusservice['/Ac/L1/Energy/Forward'] + self._dbusservice['/Ac/L2/Energy/Forward'] + self._dbusservice['/Ac/L3/Energy/Forward']
-            ##self._dbusservice['/Ac/Energy/Reverse'] = self._dbusservice['/Ac/L1/Energy/Reverse'] + self._dbusservice['/Ac/L2/Energy/Reverse'] + self._dbusservice['/Ac/L3/Energy/Reverse']
+            self._dbusservice['/Ac/Energy/Forward'] = grid_bought
+            self._dbusservice['/Ac/Energy/Reverse'] = grid_sold
 
             # logging
             ##logging.info("House Consumption (/Ac/Power): %s" % (self._dbusservice['/Ac/Power']))
