@@ -37,7 +37,7 @@ Venus/GX
 - Get Superuser rights on your CCGX device (https://www.victronenergy.com/live/ccgx:root_access#set_access_level_to_superuser)
 - Configure root password
 - Get the code from github
-- configure config.ini and maintain the paths to the device-id (smart meter id), power overall, power phase 1 - 3
+- change config.ini as per your settings (see Config-INI Details)
 - Connect via winscp (or similar ssh clients) and copy over the code to /data/dbus-iobroker-smartmeter
 - Possibly adjust the execution rights on install.sh (e.g. via winscp)
 - Execute install.sh script
