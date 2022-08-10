@@ -30,6 +30,14 @@ class DbusIobrokerSmartmeterService:
 
         self._config = self._getConfig()
 
+        # get data from Senec
+        meter_data = self._getIOBrokerSmartmeterData()
+
+        self.grid_sold_start = next((x for x in meter_data if x['id'] ==
+                                     self._getSmartMeterGridSold()), None)['val']
+        self.grid_bought_start = next((x for x in meter_data if x['id'] ==
+                                       self._getSmartMeterGridBought()), None)['val']
+
         logging.debug("%s /DeviceInstance = %d" %
                       (servicename, deviceinstance))
 
@@ -133,17 +141,19 @@ class DbusIobrokerSmartmeterService:
         value = self._config['DEFAULT']['IOBrokerPathGridBought']
         return value
 
-        
+    def _getSmartMeterVoltage(self):
+        value = self._config['DEFAULT']['IOBrokerPathVoltage']
+        return value
+
     def _getIOBrokerPath(self):
         value = self._config['DEFAULT']['IOBrokerHostPath']
         return value
-
 
     def _getIOBrokerSmartmeterData(self):
         URL = self._getIOBrokerPath() + "/getBulk/" + self._getSmartMeterDeviceId() + "," + self._getSmartMeterOverallConsumption() + "," + \
             self._getSmartMeterPhase1Consumption() + "," + self._getSmartMeterPhase2Consumption() + \
             "," + self._getSmartMeterPhase3Consumption() + "," + self._getSmartMeterGridBought() + \
-            "," + self._getSmartMeterGridSold()
+            "," + self._getSmartMeterGridSold() + "," + self._getSmartMeterVoltage()
 
         headers = {}
 
@@ -188,21 +198,26 @@ class DbusIobrokerSmartmeterService:
             phase_3 = next((x for x in meter_data if x['id'] ==
                             self._getSmartMeterPhase3Consumption()), None)['val']
             grid_sold = next((x for x in meter_data if x['id'] ==
-                              self._getSmartMeterGridSold()), None)['val']
+                              self._getSmartMeterGridSold()), None)['val'] - self.grid_sold_start
             grid_bought = next((x for x in meter_data if x['id'] ==
-                                self._getSmartMeterGridBought()), None)['val']
+                                self._getSmartMeterGridBought()), None)['val'] - self.grid_bought_start
+            voltage = next((x for x in meter_data if x['id'] ==
+                            self._getSmartMeterVoltage()), None)['val']
 
             # positive: consumption, negative: feed into grid
             self._dbusservice['/Ac/Power'] = total_value
-            ##self._dbusservice['/Ac/L1/Voltage'] = self._floatFromHex(meter_data['PM1OBJ1']['U_AC'][0])
-            ##self._dbusservice['/Ac/L2/Voltage'] = self._floatFromHex(meter_data['PM1OBJ1']['U_AC'][1])
-            ##self._dbusservice['/Ac/L3/Voltage'] = self._floatFromHex(meter_data['PM1OBJ1']['U_AC'][2])
-            ##self._dbusservice['/Ac/L1/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][0])
-            ##self._dbusservice['/Ac/L2/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][1])
-            ##self._dbusservice['/Ac/L3/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][2])
+            self._dbusservice['/Ac/L1/Voltage'] = voltage
+            self._dbusservice['/Ac/L2/Voltage'] = voltage
+            self._dbusservice['/Ac/L3/Voltage'] = voltage
+            self._dbusservice['/Ac/L1/Current'] = phase_1 / voltage
+            self._dbusservice['/Ac/L2/Current'] = phase_2 / voltage
+            self._dbusservice['/Ac/L3/Current'] = phase_3 / voltage
             self._dbusservice['/Ac/L1/Power'] = phase_1
             self._dbusservice['/Ac/L2/Power'] = phase_2
             self._dbusservice['/Ac/L3/Power'] = phase_3
+
+            self._dbusservice['/Ac/Current'] = total_value / voltage
+            self._dbusservice['/Ac/Voltage'] = phase_3
 
             ##self._dbusservice['/Ac/L1/Energy/Forward'] = (meter_data['emeters'][0]['total']/1000)
             self._dbusservice['/Ac/Energy/Forward'] = grid_bought
