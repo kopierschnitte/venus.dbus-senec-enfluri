@@ -19,24 +19,30 @@ This project is my first on GitHub and with the Victron Venus OS, so I took some
 
 ## Install & Configuration
 
-same as https://github.com/RalfZim/venus.dbus-fronius-smartmeter
+IO-Broker
 
-Summed up for IO-Broker
-
-- configure iobroker smartmeter plugin (or simply store your powers per phase in iobroker..)
 - configure simple api plugin for api broker
+- include the power consumption and energy sold/bought objects into iobroker. Implementing this differs on your situation. There are a lot of options depending on your hardware. Examples:
 
-Summed up for Venus/Victron
+    - Shelly: https://github.com/iobroker-community-adapters/ioBroker.shelly
+    - Fronius: https://github.com/iobroker-community-adapters/ioBroker.fronius
+    - Kostal: https://github.com/StrathCole/ioBroker.plenticore
+    - Senec: https://github.com/nobl/iobroker.senec/
+    - Smartmeter: iobroker smartmeter plugin
+
+
+
+Venus/GX
 
 - Get Superuser rights on your CCGX device (https://www.victronenergy.com/live/ccgx:root_access#set_access_level_to_superuser)
 - Configure root password
 - Get the code from github
-- configure config.ini and maintain the paths to the device-id (smart meter id), power overall, power phase 1 - 3
+- change config.ini as per your settings (see Config-INI Details)
 - Connect via winscp (or similar ssh clients) and copy over the code to /data/dbus-iobroker-smartmeter
 - Possibly adjust the execution rights on install.sh (e.g. via winscp)
 - Execute install.sh script
 
-## Config-INI Details
+Config-INI Details
 
 - All IOBroker Paths are referencing to the _full path_ of the iobroker object
 - IOBrokerPathSmartMeterId --> Unique ID (serial) used - can e.g. be the serial of the smart meter
