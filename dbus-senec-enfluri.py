@@ -209,12 +209,12 @@ class DbusSenecEnfluriService:
        self._dbusservice['/Ac/L3/Power'] = self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][2])
        #self._dbusservice['/Ac/L1/Energy/Forward'] = tasmota_data['StatusSNS']['LK13BE']['Power_total_in']
        self._dbusservice['/Ac/L1/Energy/Forward'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_IMPORT'])
-       ##self._dbusservice['/Ac/L2/Energy/Forward'] = (meter_data['emeters'][1]['total']/1000)
-       ##self._dbusservice['/Ac/L3/Energy/Forward'] = (meter_data['emeters'][2]['total']/1000)
+       self._dbusservice['/Ac/L2/Energy/Forward'] = 0
+       self._dbusservice['/Ac/L3/Energy/Forward'] = 0
        #self._dbusservice['/Ac/L1/Energy/Reverse'] = tasmota_data['StatusSNS']['LK13BE']['Power_total_out']
        self._dbusservice['/Ac/L1/Energy/Reverse'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_EXPORT']) 
-       ##self._dbusservice['/Ac/L2/Energy/Reverse'] = (meter_data['emeters'][1]['total_returned']/1000) 
-       ##self._dbusservice['/Ac/L3/Energy/Reverse'] = (meter_data['emeters'][2]['total_returned']/1000) 
+       self._dbusservice['/Ac/L2/Energy/Reverse'] = 0 
+       self._dbusservice['/Ac/L3/Energy/Reverse'] = 0 
        #self._dbusservice['/Ac/Energy/Forward'] = tasmota_data['StatusSNS']['LK13BE']['Power_total_in'] # bought energy in kWh
        #self._dbusservice['/Ac/Energy/Reverse'] = tasmota_data['StatusSNS']['LK13BE']['Power_total_out'] # sold energy in kWh
        self._dbusservice['/Ac/Energy/Forward'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_IMPORT'])
