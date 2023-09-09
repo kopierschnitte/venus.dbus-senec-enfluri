@@ -13,6 +13,7 @@ else:
 import sys
 import time
 import requests # for http GET
+from requests.exceptions import ConnectTimeout
 import configparser # for config/ini file
 import struct
  
@@ -99,62 +100,27 @@ class DbusSenecEnfluriService:
     accessType = config['DEFAULT']['AccessType']
     
     if accessType == 'OnPremise': 
-        URL = "http://%s/lala.cgi" % (config['ONPREMISE']['Host'])
+        URL = "https://%s/lala.cgi" % (config['ONPREMISE']['Host'])
     else:
         raise ValueError("AccessType %s is not supported" % (config['DEFAULT']['AccessType']))
     
-    return URL
-
-  def _getTasmotaStatusUrl(self):
-    config = self._getConfig()
-    accessType = config['DEFAULT']['AccessType']
-    
-    if accessType == 'OnPremise': 
-        URL = "http://%s/cm?cmnd=status 10" % (config['ONPREMISE']['Tasmota'])
-    else:
-        raise ValueError("AccessType %s is not supported" % (config['DEFAULT']['AccessType']))
-    
-    return URL
-    
+    return URL    
  
   def _getSenecEnfluriData(self):
     URL = self._getSenecStatusUrl()
     #payload = "{ \"FACTORY\" : {} }"
-    payload = "{\n            \"FACTORY\" : {},\n            \"STATISTIC\" : {},\n            \"PM1OBJ1\" : {}\n}\n\n"
+    payload = "{\n            \"FACTORY\" : {},\n            \"PM1OBJ1\" : {},\n            \"STATISTIC\" : {}\n}\n\n"
 
     headers = {}
 
-    meter_r = requests.request("POST", URL, headers=headers, data=payload)
+    try:
+    	meter_r = requests.request("POST", URL, headers=headers, data=payload, verify=False, timeout=5)
+    except ConnectTimeout:
+    	logging.info('Request has timed out')
     
     # check for response
     if not meter_r:
         raise ConnectionError("No response from Senec - %s" % (URL))
-    
-    meter_data = meter_r.json()     
-    
-    # check for Json
-    if not meter_data:
-        raise ValueError("Converting response to JSON failed")
-    
-
-    # debug:
-    #logging.info("Senec Test: %f" % (self._floatFromHex(meter_data['PM1OBJ1']['U_AC'][0])))
-    #logging.info("Senec Test: %s" % (meter_data['PM1OBJ1']['U_AC'][0]))
-
-    
-    return meter_data
-
-  def _getTasmotaData(self):
-    URL = self._getTasmotaStatusUrl()
-    payload = ""
-
-    headers = {}
-
-    meter_r = requests.request("POST", URL, headers=headers, data=payload)
-    
-    # check for response
-    if not meter_r:
-        raise ConnectionError("No response from Tasmota - %s" % (URL))
     
     meter_data = meter_r.json()     
     
@@ -178,19 +144,12 @@ class DbusSenecEnfluriService:
  
   def _signOfLife(self):
     #logging.info("--- Start: sign of life ---")
-    #logging.info("Last _update() call: %s" % (self._lastUpdate))
-    ##logging.info("Last '/Ac/Power': %s" % (self._dbusservice['/Ac/Power']))
+    logging.info("Last _update() call: %s" % (self._lastUpdate))
+    logging.info("Last '/Ac/Power': %s" % (self._dbusservice['/Ac/Power']))
     #logging.info("--- End: sign of life ---")
     return True
  
   def _update(self):
-    #try:
-    #   tasmota_data = self._getTasmotaData()
-
-    #except Exception as e:
-    #   logging.critical('Error at %s', '_update', exc_info=e)
-    #   tasmota_data['StatusSNS']['LK13BE']['Power_total_in'] = 0
-    #   tasmota_data['StatusSNS']['LK13BE']['Power_total_out'] = 0
  
     try:
        #get data from Senec
@@ -198,28 +157,32 @@ class DbusSenecEnfluriService:
        
        #send data to DBus
        self._dbusservice['/Ac/Power'] = self._floatFromHex(meter_data['PM1OBJ1']['P_TOTAL']) # positive: consumption, negative: feed into grid
-       self._dbusservice['/Ac/L2/Voltage'] = self._floatFromHex(meter_data['PM1OBJ1']['U_AC'][0])
-       self._dbusservice['/Ac/L1/Voltage'] = self._floatFromHex(meter_data['PM1OBJ1']['U_AC'][1])
+       self._dbusservice['/Ac/L1/Voltage'] = self._floatFromHex(meter_data['PM1OBJ1']['U_AC'][0])
+       self._dbusservice['/Ac/L2/Voltage'] = self._floatFromHex(meter_data['PM1OBJ1']['U_AC'][1])
        self._dbusservice['/Ac/L3/Voltage'] = self._floatFromHex(meter_data['PM1OBJ1']['U_AC'][2])
-       self._dbusservice['/Ac/L2/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][0])
-       self._dbusservice['/Ac/L1/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][1])
-       self._dbusservice['/Ac/L3/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][2])
-       self._dbusservice['/Ac/L2/Power'] = self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][0])
-       self._dbusservice['/Ac/L1/Power'] = self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][1])
-       self._dbusservice['/Ac/L3/Power'] = self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][2])
-       #self._dbusservice['/Ac/L1/Energy/Forward'] = tasmota_data['StatusSNS']['LK13BE']['Power_total_in']
-       self._dbusservice['/Ac/L1/Energy/Forward'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_IMPORT'])
-       self._dbusservice['/Ac/L2/Energy/Forward'] = 0
-       self._dbusservice['/Ac/L3/Energy/Forward'] = 0
-       #self._dbusservice['/Ac/L1/Energy/Reverse'] = tasmota_data['StatusSNS']['LK13BE']['Power_total_out']
-       self._dbusservice['/Ac/L1/Energy/Reverse'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_EXPORT']) 
-       self._dbusservice['/Ac/L2/Energy/Reverse'] = 0 
-       self._dbusservice['/Ac/L3/Energy/Reverse'] = 0 
-       #self._dbusservice['/Ac/Energy/Forward'] = tasmota_data['StatusSNS']['LK13BE']['Power_total_in'] # bought energy in kWh
-       #self._dbusservice['/Ac/Energy/Reverse'] = tasmota_data['StatusSNS']['LK13BE']['Power_total_out'] # sold energy in kWh
-       self._dbusservice['/Ac/Energy/Forward'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_IMPORT'])
-       self._dbusservice['/Ac/Energy/Reverse'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_EXPORT'])
+       
+       #self._dbusservice['/Ac/L2/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][0])
+       #self._dbusservice['/Ac/L1/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][1])
+       #self._dbusservice['/Ac/L3/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][2])
+       #self._dbusservice['/Ac/L2/Power'] = self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][0])
+       #self._dbusservice['/Ac/L1/Power'] = self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][1])
+       #self._dbusservice['/Ac/L3/Power'] = self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][2])
+       
+       self._dbusservice['/Ac/L1/Current'] = self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][0]) + self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][1]) + self._floatFromHex(meter_data['PM1OBJ1']['I_AC'][2])
+       self._dbusservice['/Ac/L2/Current'] = 0
+       self._dbusservice['/Ac/L3/Current'] = 0
+       self._dbusservice['/Ac/L1/Power'] = self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][0]) + self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][1]) + self._floatFromHex(meter_data['PM1OBJ1']['P_AC'][2])
+       self._dbusservice['/Ac/L2/Power'] = 0
+       self._dbusservice['/Ac/L3/Power'] = 0
 
+       #self._dbusservice['/Ac/L1/Energy/Forward'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_IMPORT'])
+       ##self._dbusservice['/Ac/L2/Energy/Forward'] = (meter_data['emeters'][1]['total']/1000)
+       ##self._dbusservice['/Ac/L3/Energy/Forward'] = (meter_data['emeters'][2]['total']/1000)
+       #self._dbusservice['/Ac/L1/Energy/Reverse'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_EXPORT']) 
+       ##self._dbusservice['/Ac/L2/Energy/Reverse'] = (meter_data['emeters'][1]['total_returned']/1000) 
+       ##self._dbusservice['/Ac/L3/Energy/Reverse'] = (meter_data['emeters'][2]['total_returned']/1000) 
+       #self._dbusservice['/Ac/Energy/Forward'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_IMPORT']) # bought energy in kWh
+       #self._dbusservice['/Ac/Energy/Reverse'] = self._floatFromHex(meter_data['STATISTIC']['LIVE_GRID_EXPORT']) # sold energy in kWh
        
        #logging
        ##logging.info("House Consumption (/Ac/Power): %s" % (self._dbusservice['/Ac/Power']))
